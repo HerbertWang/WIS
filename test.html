@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Index page</title>
+  	<meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta charset="utf-8">
+<link rel="stylesheet" type="text/css" href="style.css">
+
+    <script type="text/javascript"
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBFu2-TwtMOSfDUzW1hb9OatMoBuQ4SooI&sensor=false">
+      </script>
+     <script>
+     var geocoder;
+	var map;
+var markers = [];
+
+function initialize() {
+	geocoder = new google.maps.Geocoder(); 	
+  var haightAshbury = new google.maps.LatLng(-27.4667, 153.0333);
+  var mapOptions = {
+    zoom: 10,
+    center: haightAshbury,
+    mapTypeId: google.maps.MapTypeId.TERRAIN
+  };
+  map = new google.maps.Map(document.getElementById('map-canvas'),
+      mapOptions);
+
+  google.maps.event.addListener(map, 'click', function(event) {
+    addMarker(event.latLng);
+  });
+}
+
+// Add a marker to the map and push to the array.
+function addMarker(ID) {
+	clearOverlays();
+	ID=ID-1;
+	var AddressName = document.getElementById('AddressName'+ID).value;
+	var latitude = document.getElementById('latitude'+ID).value;
+	var longitude = document.getElementById('longitude'+ID).value;
+  	var address = new google.maps.LatLng(latitude, longitude);
+  	map.setCenter(address);
+  	var marker = new google.maps.Marker({
+    position: address,
+	title:AddressName,
+    map: map
+	});
+  markers.push(marker);
+}
+
+// Sets the map on all markers in the array.
+function setAllMap(map) {
+  for (var i = 0; i < markers.length; i++) {
+    markers[i].setMap(map);
+  }
+}
+
+// Removes the overlays from the map, but keeps them in the array.
+function clearOverlays() {
+  setAllMap(null);
+}
+
+// Shows any overlays currently in the array
+function showAllLocation() {
+	clearOverlays();
+	var Count = document.getElementById('MAX').value;
+	for (var i=0;i<Count;i++)
+	{ 
+			var AddressName = document.getElementById('AddressName'+i).value;
+			var latitude = document.getElementById('latitude'+i).value;
+			var longitude = document.getElementById('longitude'+i).value;
+			var Location = new google.maps.LatLng(latitude, longitude);
+			var marker = new google.maps.Marker({
+				position: Location,
+				title:AddressName,
+				map: map
+					});
+  
+			markers.push(marker);
+	}
+
+  }			
+google.maps.event.addDomListener(window, 'load', initialize);
+
+    </script>
+    
+    
+    
+<script src="Library/jquery-1.9.0.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+function search(){
+		var keyword = $("#keyword").val();
+	    $.ajax({
+					type: "GET",
+					url: "Function.php",
+					data: "Action=Search&keyword="+keyword,
+					cache: false,
+					async: false,
+					success: function(result) {
+						if(result)
+						{
+						$("#Result").html(result);
+						}
+						else
+						{
+							$("#Result").html("<IMG src='Img/icon.png' width=64 height=64 >Sorry, no results matching your search were found");
+						}
+					},
+					error: function(result) {
+						alert("some error occured, please try again later");
+					}
+				});
+
+};
+
+function Comments(ID){
+    $.ajax({
+  		type: "Get",
+			url: "Function.php",
+			data: "Action=Comments&ID="+ID,
+			cache: false,
+			async: false,
+			datatype: "jason",
+    		success: function(result){
+    			var json = $.parseJSON(result);
+    			var resultStr = "";
+                $.each(json, function(index, content){
+                resultStr += ("<div class='comment'><div class='headPhoto'><IMG src='Img/headPhoto.jpg' width width=40 height=40></div><div class='commentsOBJ'><b>      " + content.label + ": " + content.Content+"</b></div></div>");
+                });
+                $("#CommentsContainer"+ID).html(resultStr);
+   			 console.log(json)
+    	
+    			
+    		}
+    		});
+
+
+};
+
+
+
+function addComment(ID){
+	var Add = "";
+	Add += ("Please,'leave your' comment");
+	Add += ("<table width='800' border='0'>");
+	Add += ("<tr><td>Name:*</td><td><input size='16'' name='Name' ID='Name'></td></tr>");
+	Add += ("<tr><td>Comment:*</td><td><input size='32' name='Body' ID='Body'></td></tr>");
+	Add += ("<tr><td><input type='button'' value='Submit' onClick='javascript:add("+ID+")'></td></tr>");
+	$("#CommentsContainer"+ID).html(Add);
+
+
+};
+
+function add(ID){
+	var Name = $("#Name").val();
+	var Body = $("#Body").val();
+	
+	$.ajax({
+  		type: "Get",
+			url: "Function.php",
+			data: "Action=AddComments&ID="+ID+"&Name="+Name+"&Body="+Body,
+    		success: function(result){
+				alert("you have sucessful comment");
+    			Comments(ID)
+	
+    		}
+    		});
+
+
+};
+</script>
+
+
+</head>
+<body>
+
+<div>
+<input name="keyword" id="keyword" type="text">
+<input type='submit' value='Search' onClick='javascript:search()'>
+
+
+</div>
+	
+<div id="map-canvas"/></div>
+
+
+<div id="Result"></div>
+
+</body>
+</html>
